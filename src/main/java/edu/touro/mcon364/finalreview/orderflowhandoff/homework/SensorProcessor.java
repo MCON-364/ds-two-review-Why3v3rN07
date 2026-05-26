@@ -3,6 +3,10 @@ package edu.touro.mcon364.finalreview.orderflowhandoff.homework;
 import edu.touro.mcon364.finalreview.model.SensorReading;
 
 import java.util.DoubleSummaryStatistics;
+import java.util.IntSummaryStatistics;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Homework 2 — Sensor reading processor.
@@ -43,6 +47,12 @@ import java.util.DoubleSummaryStatistics;
  */
 public class SensorProcessor {
 
+    private volatile boolean running = false;
+    private ExecutorService executor;
+    private BlockingQueue<SensorReading> queue = new LinkedBlockingQueue<>();
+    private AtomicInteger totalProcessed = new AtomicInteger(0);
+    private AtomicReference<DoubleSummaryStatistics> stats = new AtomicReference<>(new DoubleSummaryStatistics());
+
     /**
      * Accept one sensor reading for processing.
      *
@@ -50,6 +60,7 @@ public class SensorProcessor {
      */
     public void submit(SensorReading reading) {
         // TODO: decide where submitted readings should be stored
+        queue.offer(reading);
     }
 
     /**
@@ -60,7 +71,12 @@ public class SensorProcessor {
      */
     public void start(int workerCount) {
         // TODO: validate workerCount
+        if (workerCount <= 0) throw new IllegalArgumentException("workerCount must be positive");
         // TODO: start the requested number of workers
+        executor = Executors.newFixedThreadPool(workerCount);
+        for (int i = 0; i < workerCount; i++) {
+            executor.submit(this::workerLoop);
+        }
     }
 
     /**
@@ -72,6 +88,35 @@ public class SensorProcessor {
      */
     private void workerLoop() {
         // TODO: implement the worker behavior
+        while (running || !queue.isEmpty()) {
+            try{
+                SensorReading reading = queue.poll(100, TimeUnit.MILLISECONDS);
+                if (reading != null) {
+                    process(reading);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Process a single reading and update stats.
+     *
+     * This method is private because callers should not process readings directly.
+     * Only workers should call this method, and they should only call it when they
+     * have a reading to process.
+     *
+     * @param reading the reading to process
+     */
+    private void process(SensorReading reading) {
+        totalProcessed.incrementAndGet();
+        stats.updateAndGet(existing -> {
+            DoubleSummaryStatistics updated = new DoubleSummaryStatistics();
+            updated.combine(existing);
+            updated.accept(reading.value());
+            return updated;
+        });
     }
 
     /**
@@ -81,7 +126,14 @@ public class SensorProcessor {
      */
     public void stop() throws InterruptedException {
         // TODO: signal that work should stop
+        running = false;
+        executor.shutdown();
         // TODO: wait for all workers to finish
+        executor.awaitTermination(1, TimeUnit.MINUTES);
+        while (!queue.isEmpty()) {
+            process(queue.poll());
+        }
+
     }
 
     /**
@@ -89,7 +141,7 @@ public class SensorProcessor {
      */
     public int getTotalProcessed() {
         // TODO: return the processed count safely
-        return 0;
+        return totalProcessed.get();
     }
 
     /**
@@ -100,6 +152,6 @@ public class SensorProcessor {
      */
     public DoubleSummaryStatistics getStats() {
         // TODO: calculate or return the current statistics safely
-        return new DoubleSummaryStatistics();
+        return stats.get();
     }
 }
