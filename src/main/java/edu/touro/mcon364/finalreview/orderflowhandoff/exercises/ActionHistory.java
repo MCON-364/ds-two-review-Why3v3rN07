@@ -46,9 +46,9 @@ public class ActionHistory {
         // pop from undo and push to redo
         if (undoStack.isEmpty()) return Optional.empty();
 
-        Optional<Action> action = Optional.of(undoStack.pop());
-        redoStack.push(action.get());
-        return action;
+        Action action = undoStack.pop();
+        redoStack.push(action);
+        return Optional.of(action);
     }
 
     public Optional<Action> redo() {
@@ -56,9 +56,9 @@ public class ActionHistory {
         // pop from redo and push to undo
         if (redoStack.isEmpty()) return Optional.empty();
 
-        Optional<Action> action = Optional.of(redoStack.pop());
-        undoStack.push(action.get());
-        return action;
+        Action action = redoStack.pop();
+        undoStack.push(action);
+        return Optional.of(action);
     }
 
     public int getUndoCount() {

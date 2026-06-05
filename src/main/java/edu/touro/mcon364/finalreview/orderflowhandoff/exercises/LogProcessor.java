@@ -17,13 +17,13 @@ import java.util.stream.Collectors;
  * authentication, payments, reporting, background jobs, and so on. Messages may
  * arrive while earlier messages are still being processed. We want one part of
  * the program to submit log messages, and a small group of worker threads to
- * process those messages in the background.
+ * process those messages in the background. (producer consumer pattern)
  * <p>
  * This class represents that log-processing service.
  * <p>
  * The main problem you are solving:
- * - incoming messages need to wait somewhere until a worker is ready for them;
- * - more than one worker may be running at the same time;
+ * - incoming messages need to wait somewhere until a worker is ready for them; (blocking queue)
+ * - more than one worker may be running at the same time; (threads)
  * - every submitted message should be processed once;
  * - while messages are processed, the class must keep accurate summary counts.
  * <p>
@@ -43,14 +43,14 @@ import java.util.stream.Collectors;
  * Questions to think about before coding:
  * - Where should submitted messages wait before a worker processes them?
  * - What behavior do we need from that structure: newest first, oldest first,
- * priority order, or something else?
- * - Which state is shared by multiple threads?
+ * priority order, or something else? (fifo, queue)
+ * - Which state is shared by multiple threads? (counters, queue)
  * - Which operations must be protected so the statistics stay correct?
  * - How will worker threads know when to continue waiting for work and when to
  * finish?
  * - What should happen if stop() is called while messages are still waiting?
  * - What should the public getter methods return so outside code cannot damage
- * the processor's internal state?
+ * the processor's internal state? (defensive copy)
  */
 public class LogProcessor {
 
