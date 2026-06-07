@@ -3,6 +3,9 @@ package edu.touro.mcon364.finalreview.orderflowhandoff.homework;
 import edu.touro.mcon364.finalreview.model.PrintJob;
 
 import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Homework 1 — PrintQueue.
@@ -38,7 +41,8 @@ import java.util.Optional;
  */
 public class PrintQueue {
 
-    // TODO: choose the field or fields needed to remember waiting print jobs
+    // TO-DO: choose the field or fields needed to remember waiting print jobs
+    BlockingQueue<PrintJob> printJobs = new LinkedBlockingQueue<>();
 
     /**
      * Records a new print job as waiting.
@@ -47,6 +51,7 @@ public class PrintQueue {
      */
     public void submit(PrintJob job) {
         // TODO: implement
+        printJobs.offer(job);
     }
 
     /**
@@ -55,8 +60,9 @@ public class PrintQueue {
      * @return the next print job, or Optional.empty() when no jobs are waiting
      */
     public Optional<PrintJob> printNext() {
-        // TODO: implement
-        return Optional.empty();
+        // TO-DO: implement
+        if (queuedJobs() == 0) return Optional.empty();
+        return Optional.ofNullable(printJobs.poll());
     }
 
     /**
@@ -66,14 +72,15 @@ public class PrintQueue {
      */
     public Optional<PrintJob> peekNext() {
         // TODO: implement
-        return Optional.empty();
+        if (queuedJobs() == 0) return Optional.empty();
+        return Optional.ofNullable(printJobs.peek());
     }
 
     /**
      * Returns the number of jobs currently waiting to be printed.
      */
     public int queuedJobs() {
-        // TODO: implement
-        return 0;
+        // TO-DO: implement
+        return printJobs.size();
     }
 }
