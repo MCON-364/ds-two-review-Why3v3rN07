@@ -44,7 +44,8 @@ public class WordFrequencyCounter {
     public WordFrequencyCounter(List<String> words) {
         // TODO: validate that words is not null
         // TODO: store a defensive copy so outside code cannot mutate this object
-        this.words = List.of();
+        if (words == null) throw new IllegalArgumentException("Words list cannot be null");
+        this.words = List.copyOf(words);
     }
 
     /**
@@ -54,7 +55,7 @@ public class WordFrequencyCounter {
      */
     public TreeMap<String, Long> buildFrequencyMap() {
         // TODO
-        return new TreeMap<>();
+        return this.words.stream().collect(Collectors.groupingBy(word -> word, TreeMap::new, Collectors.counting()));
     }
 
     /**
@@ -65,7 +66,11 @@ public class WordFrequencyCounter {
      */
     public List<String> getTopN(int n) {
         // TODO
-        return List.of();
+        return buildFrequencyMap().entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .limit(n)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -77,7 +82,10 @@ public class WordFrequencyCounter {
      */
     public List<String> getWordsStartingWith(char prefix) {
         // TODO
-        return List.of();
+        NavigableSet<String> set = new TreeSet<>(words);
+        String from = String.valueOf(prefix); //from letter
+        String to = String.valueOf((char)(prefix + 1)); //to next letter
+        return new ArrayList<>(set.subSet(from, to));
     }
 
     /**
@@ -90,6 +98,10 @@ public class WordFrequencyCounter {
      */
     public Optional<String> getMostFrequentInRange(String from, String to) {
         // TODO
-        return Optional.empty();
+        return buildFrequencyMap().subMap(from, true, to, true)
+                .entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .map(Map.Entry::getKey)
+                .findFirst();
     }
 }

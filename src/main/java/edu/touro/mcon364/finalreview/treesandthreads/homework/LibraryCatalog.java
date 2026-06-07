@@ -36,7 +36,8 @@ public class LibraryCatalog {
 
     public LibraryCatalog(List<Book> books) {
         // TODO: validate non-null, store a defensive copy
-        this.books = List.of();
+        if (books == null) throw new IllegalArgumentException("Books list cannot be null");
+        this.books = List.copyOf(books);
     }
 
     /**
@@ -46,7 +47,13 @@ public class LibraryCatalog {
      */
     public TreeMap<String, Book> buildTitleIndex() {
         // TODO
-        return new TreeMap<>();
+        return books.stream()
+                .collect(Collectors.toMap(
+                        Book::title,
+                        b -> b,
+                        (b1, b2) -> b1,
+                        TreeMap::new
+                ));
     }
 
     /**
@@ -55,7 +62,19 @@ public class LibraryCatalog {
      */
     public TreeMap<String, TreeSet<Book>> buildAuthorIndex() {
         // TODO
-        return new TreeMap<>();
+        return books.stream().collect(Collectors.toMap(
+                Book::author,
+                b -> {
+                    TreeSet<Book> set = new TreeSet<>();
+                    set.add(b);
+                    return set;
+                },
+                (set1, set2) -> {
+                    set1.addAll(set2);
+                    return set1;
+                },
+                TreeMap::new
+        ));
     }
 
     /**
@@ -64,7 +83,9 @@ public class LibraryCatalog {
      */
     public List<Book> getBooksPublishedBefore(int year) {
         // TODO
-        return List.of();
+        return books.stream().filter(b -> b.year() < year)
+                .sorted()
+                .toList();
     }
 
     /**
@@ -73,7 +94,10 @@ public class LibraryCatalog {
      */
     public List<String> getAuthorsWithMoreThan(int n) {
         // TODO
-        return List.of();
+        return buildAuthorIndex().entrySet().stream()
+                .filter(e -> e.getValue().size() > n)
+                .map(Map.Entry::getKey)
+                .toList();
     }
 
     /**
@@ -82,7 +106,9 @@ public class LibraryCatalog {
      */
     public List<Book> findByTitlePrefix(String prefix) {
         // TODO
-        return List.of();
+        return buildTitleIndex().subMap(prefix, prefix + Character.MAX_VALUE).values().stream()
+                .sorted()
+                .toList();
     }
 }
 

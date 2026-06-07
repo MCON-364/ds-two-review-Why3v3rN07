@@ -33,7 +33,8 @@ public class StudentGradeBook {
 
     public StudentGradeBook(Map<String, Double> grades) {
         // TODO: validate non-null; store a defensive copy
-        this.grades = Map.of();
+        if (grades == null) throw new IllegalArgumentException("Grades map cannot be null");
+        this.grades = Map.copyOf(grades);
     }
 
     /**
@@ -42,7 +43,7 @@ public class StudentGradeBook {
      */
     public TreeMap<String, Double> buildSortedGradeBook() {
         // TODO
-        return new TreeMap<>();
+        return new TreeMap<>(grades);
     }
 
     /**
@@ -51,7 +52,7 @@ public class StudentGradeBook {
      */
     public DoubleSummaryStatistics getStatistics() {
         // TODO
-        return new DoubleSummaryStatistics();
+        return buildSortedGradeBook().values().stream().collect(Collectors.summarizingDouble(Double::doubleValue));
     }
 
     /**
@@ -60,7 +61,17 @@ public class StudentGradeBook {
      */
     public TreeMap<String, Long> getLetterGradeDistribution() {
         // TODO
-        return new TreeMap<>();
+        String[] letterGrades = {"A", "B", "C", "D", "F"};
+        return grades.entrySet().stream()
+                .collect(Collectors.groupingBy(
+                        v ->
+                                v.getValue() >= 90 ? "A" :
+                                v.getValue() >= 80 ? "B" :
+                                v.getValue() >= 70 ? "C" :
+                                v.getValue() >= 60 ? "D" : "F",
+                        TreeMap::new,
+                        Collectors.counting()));
+
     }
 
     /**
@@ -68,7 +79,7 @@ public class StudentGradeBook {
      */
     public List<String> getTopStudents(int n) {
         // TODO
-        return List.of();
+        return grades.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).limit(n).map(Map.Entry::getKey).toList();
     }
 
     /**
@@ -77,6 +88,10 @@ public class StudentGradeBook {
      */
     public List<String> getStudentsInScoreRange(double low, double high) {
         // TODO
-        return List.of();
+        return grades.entrySet().stream()
+                .filter(e -> e.getValue() >= low && e.getValue() <= high)
+                .map(Map.Entry::getKey)
+                .sorted()
+                .toList();
     }
 }
