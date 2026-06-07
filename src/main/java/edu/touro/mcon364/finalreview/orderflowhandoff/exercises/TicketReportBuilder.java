@@ -1,10 +1,12 @@
 package edu.touro.mcon364.finalreview.orderflowhandoff.exercises;
 
+import edu.touro.mcon364.finalreview.model.Priority;
 import edu.touro.mcon364.finalreview.model.SupportTicket;
 import edu.touro.mcon364.finalreview.model.TicketReport;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Building a report from completed work.
@@ -69,16 +71,16 @@ public class TicketReportBuilder {
      * list reference or store a defensive copy.
      */
     public TicketReportBuilder(List<SupportTicket> tickets) {
-        // TODO: validate and store the tickets this object will analyze
-        this.tickets = List.of();
+        // TO-DO: validate and store the tickets this object will analyze
+        this.tickets = List.copyOf(tickets);
     }
 
     /**
      * Return how many tickets in this report data set were resolved.
      */
     public long getResolvedCount() {
-        // TODO: calculate from tickets
-        return 0;
+        // TO-DO: calculate from tickets
+        return this.tickets.stream().filter(SupportTicket::resolved).count();
     }
 
     /**
@@ -87,24 +89,24 @@ public class TicketReportBuilder {
      * Tickets that are not resolved should not affect this average.
      */
     public double getAverageResolutionMinutes() {
-        // TODO: calculate from tickets
-        return 0.0;
+        // TO-DO: calculate from tickets
+        return this.tickets.stream().filter(SupportTicket::resolved).mapToInt(SupportTicket::minutesToResolve).average().orElse(0);
     }
 
     /**
      * Return how many tickets belong to each category.
      */
     public Map<String, Long> getCountByCategory() {
-        // TODO: calculate from tickets
-        return Map.of();
+        // TO-DO: calculate from tickets
+        return Map.copyOf(this.tickets.stream().collect(Collectors.groupingBy(SupportTicket::category, Collectors.counting())));
     }
 
     /**
      * Return unresolved tickets that should receive the most urgent attention.
      */
     public List<SupportTicket> getHighPriorityUnresolved() {
-        // TODO: calculate from tickets
-        return List.of();
+        // TO-DO: calculate from tickets
+        return this.tickets.stream().filter(t -> !t.resolved() && t.priority() == Priority.HIGH).toList();
     }
 
     /**

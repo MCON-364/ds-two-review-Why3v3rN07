@@ -1,6 +1,9 @@
 package edu.touro.mcon364.finalreview.orderflowhandoff.exercises;
 
-import edu.touro.mcon364.finalreview.model.Action;import java.util.Optional;
+import edu.touro.mcon364.finalreview.model.Action;
+
+import java.util.ArrayDeque;
+import java.util.Optional;
 
 /**
  * In-class Exercise 1 — Action History
@@ -28,28 +31,45 @@ import edu.touro.mcon364.finalreview.model.Action;import java.util.Optional;
 
  */
 public class ActionHistory {
+    private ArrayDeque<Action> undoStack = new ArrayDeque<>();
+    private ArrayDeque<Action> redoStack = new ArrayDeque<>();
 
     public void perform(Action action) {
-        // TODO: implement based on the requirements above
+        // TO-DO: implement based on the requirements above
+        // push to undo and clear redo
+        undoStack.push(action);
+        redoStack.clear();
     }
 
     public Optional<Action> undo() {
-        // TODO: implement based on the requirements above
-        return Optional.empty();
+        // TO-DO: implement based on the requirements above
+        // pop from undo and push to redo
+        if (undoStack.isEmpty()) return Optional.empty();
+
+        Action action = undoStack.pop();
+        redoStack.push(action);
+        return Optional.of(action);
     }
 
     public Optional<Action> redo() {
-        // TODO: implement based on the requirements above
-        return Optional.empty();
+        // TO-DO: implement based on the requirements above
+        // pop from redo and push to undo
+        if (redoStack.isEmpty()) return Optional.empty();
+
+        Action action = redoStack.pop();
+        undoStack.push(action);
+        return Optional.of(action);
     }
 
     public int getUndoCount() {
-        // TODO: implement based on the requirements above
-        return 0;
+        // TO-DO: implement based on the requirements above
+        // return size of undo
+        return undoStack.size();
     }
 
     public int getRedoCount() {
-        // TODO: implement based on the requirements above
-        return 0;
+        // TO-DO: implement based on the requirements above
+        // return size of redo
+        return redoStack.size();
     }
 }
